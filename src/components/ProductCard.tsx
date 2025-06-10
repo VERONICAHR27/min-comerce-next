@@ -1,49 +1,71 @@
 "use client";
 
+import { useState } from 'react';
 import { Product } from '@/models/products';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
 
 export default function ProductCard(props: Product) {
     const { addToCart } = useCart();
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleAddToCart = async () => {
+        setIsAdding(true);
+        try {
+            addToCart(props);
+            // The cart will be automatically saved to backend through the useEffect in CartContext
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        } finally {
+            setIsAdding(false);
+        }
+    };
 
     return (
-        <div className="relative bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 flex flex-col h-full">
-            <Link href={`/product/${props.id}`} className="flex-grow">
-                <img
-                    src={props.imageUrl}
-                    alt={props.title}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-                <h2 className="text-lg font-semibold mb-2">{props.title}</h2>
-                <p className="text-blue-600 font-semibold">${props.price.toFixed(2)}</p>
-            </Link>
-            
-            {/* Sale Badge - Ajustado z-index y posición */}
+        <Card className="relative h-full flex flex-col hover:shadow-md transition-shadow duration-300">
+            {/* Sale Badge */}
             {props.onSale && (
                 <span className="absolute top-2 right-2 bg-rose-100 text-rose-600 text-xs font-medium px-2 py-1 rounded-full z-10">
                     On Sale
                 </span>
             )}
-            
-            {/* Content */}
-            <div className="flex flex-col flex-grow">
-                <div className="mt-auto">
-                    <p className="text-gray-600 text-sm mb-2">
-                        {props.category}
-                    </p>
-                    <p className="text-gray-900 font-semibold">
+
+            <CardContent className="flex-grow px-4">
+                
+                <Link href={`/product/${props.id}`}>
+                <img
+                    src={props.imageUrl}
+                    alt={props.title}
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                        />
+                     <p className="text-lg font-semibold mb-2">
+                        {props.title}
+                    </p>   
+                    
+                    <p className="text-blue-600 font-semibold">
                         ${props.price.toFixed(2)}
                     </p>
+                </Link>
+                <div className="mt-2">
+                    <p className="text-gray-600 text-sm">
+                        {props.category}
+                    </p>
                 </div>
+            </CardContent>
 
-                <button 
-                    onClick={() => addToCart(props)}
-                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            <CardFooter className="p-4">
+                <Button 
+                    onClick={handleAddToCart}
+                    className="w-full"
+                    disabled={isAdding}
                 >
-                    Agregar al carrito
-                </button>
-            </div>
-        </div>
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {isAdding ? 'Agregando...' : 'Agregar al carrito'}
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }
