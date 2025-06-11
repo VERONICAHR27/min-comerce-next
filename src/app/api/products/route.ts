@@ -7,21 +7,24 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const products = await prisma.product.findMany();
-    return NextResponse.json(
-      { 
-          products,
-          message: 'Products retrieved successfully' 
-      }, 
-      { status: 200 }
-    );
+    console.log('Products from DB:', products); // Debug log
+    
+    return NextResponse.json({ 
+        success: true,
+        products: products,
+        message: 'Products retrieved successfully' 
+    });
   } catch (error) {
-    return NextResponse.json(
-      { 
-          message: 'Error retrieving products',
-          error: error instanceof Error ? error.message : 'Unknown error'
-      }, 
-      { status: 500 }
-    );
+    console.error('Database error:', error);
+    return NextResponse.json({ 
+        success: false,
+        message: 'Error retrieving products',
+        error: error instanceof Error ? error.message : 'Unknown error'
+    }, { 
+        status: 500 
+    });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

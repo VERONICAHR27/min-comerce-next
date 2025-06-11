@@ -1,22 +1,61 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import { products } from '@/models/products';
+import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
 
+interface Product {
+    id: string;
+    title: string;
+    price: number;
+    imageUrl: string;
+    category: string;
+    onSale: boolean;
+}
+
 export default function ProductDetail() {
     const params = useParams();
     const { addToCart } = useCart();
-    
-    const product = products.find(p => p.id === params.id);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    if (!product) {
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`/api/products/${params.id}`);
+                if (!response.ok) {
+                    throw new Error('Product not found');
+                }
+                const data = await response.json();
+                setProduct(data);
+            } catch (error) {
+                console.error('Error fetching product:', error);
+                setError('Error loading product');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (params.id) {
+            fetchProduct();
+        }
+    }, [params.id]);
+
+    if (loading) {
+        return <div className="container mx-auto p-4">Loading...</div>;
+    }
+
+    if (error || !product) {
         return (
             <div className="container mx-auto p-4">
-                <h1 className="text-2xl font-bold text-red-600">Product not found</h1>
+                <h1 className="text-2xl font-bold text-red-600">
+                    {error || 'Product not found'}
+                </h1>
             </div>
         );
     }

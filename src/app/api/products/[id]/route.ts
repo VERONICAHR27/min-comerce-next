@@ -9,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('Fetching product with ID:', params.id); // Debug log
     const product = await prisma.product.findUnique({
       where: {
         id: params.id,
@@ -16,18 +17,23 @@ export async function GET(
     });
 
     if (!product) {
+      console.log('Product not found'); // Debug log
       return NextResponse.json(
         { error: 'Producto no encontrado' },
         { status: 404 }
       );
     }
 
+    console.log('Product found:', product); // Debug log
     return NextResponse.json(product);
   } catch (error) {
+    console.error('Error fetching product:', error); // Debug log
     return NextResponse.json(
       { error: 'Error al obtener el producto' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
