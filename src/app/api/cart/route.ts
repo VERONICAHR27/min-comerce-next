@@ -1,56 +1,100 @@
 // src/app/api/cart/route.ts
 import { NextResponse } from 'next/server';
-import type { Cart } from '@/models/cart';
+import { PrismaClient } from '@prisma/client';
 
-// Simulamos una base de datos en memoria
-let savedCart: Cart | null = null;
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
     try {
-        const cart: Cart = await request.json();
+        const { items } = await request.json();
         
-        // Simulamos guardar en una base de datos
-        savedCart = cart;
-        console.log('Cart saved to backend:', cart);
+        // Obtener o crear el carrito
+        let cart = await prisma.cart.findFirst();
+        if (!cart) {
+            cart = await prisma.cart.create({ data: {} });
+        }
+
+        // Eliminar items existentes
+        await prisma.cartItem.deleteMany({
+            where: { cartId: cart.id }
+        });
+
+        // Crear nuevos items
+        await prisma.cartItem.createMany({
+            data: items.map((item: any) => ({
+                cartId: cart!.id,
+                productId: item.product.id,
+                quantity: item.quantity
+            }))
+        });
+
+        // Obtener el carrito actualizado
+        const updatedCart = await prisma.cart.findUnique({
+            where: { id: cart.id },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
 
         return NextResponse.json({ 
-            success: true, 
-            message: 'Cart saved successfully',
-            data: cart 
-        }, { 
-            status: 200 
+            success: true,
+            data: updatedCart
         });
     } catch (error) {
         console.error('Error saving cart:', error);
-        return NextResponse.json(
-            { 
-                success: false, 
-                message: 'Error saving cart',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            }, 
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'Error saving cart' }, { status: 500 });
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
 export async function GET() {
     try {
-        // Simulamos obtener de una base de datos
+        // Por ahora usaremos un carrito "default" hasta implementar autenticación
+        let cart = await prisma.cart.findFirst({
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        if (!cart) {
+            cart = await prisma.cart.create({
+                data: {},
+                include: {
+                    items: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            });
+        }
+
+        const total = cart.items.reduce(
+            (sum, item) => sum + (item.product.price * item.quantity),
+            0
+        );
+
         return NextResponse.json({ 
-            success: true, 
-            message: 'Cart retrieved successfully',
-            data: savedCart || { items: [], total: 0 }
-        }, { 
-            status: 200 
+            success: true,
+            data: {
+                id: cart.id,
+                items: cart.items,
+                total
+            }
         });
     } catch (error) {
-        return NextResponse.json(
-            { 
-                success: false, 
-                message: 'Error retrieving cart',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            }, 
-            { status: 500 }
-        );
+        console.error('Error retrieving cart:', error);
+        return NextResponse.json({ success: false, error: 'Error retrieving cart' }, { status: 500 });
+    } finally {
+        await prisma.$disconnect();
     }
 }

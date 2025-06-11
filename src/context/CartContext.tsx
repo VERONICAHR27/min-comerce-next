@@ -21,81 +21,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Cargar carrito inicial
+    // Cargar carrito inicial desde la base de datos
     useEffect(() => {
-        const loadCart = async () => {
+        const fetchCart = async () => {
             try {
                 setIsLoading(true);
-                setError(null);
-
-                // Intentar cargar desde localStorage primero
-                const savedCart = localStorage.getItem('cart');
-                if (savedCart) {
-                    setCart(JSON.parse(savedCart));
-                }
-
-                // Luego intentar sincronizar con el backend
                 const response = await fetch('/api/cart');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch cart from server');
-                }
-
+                if (!response.ok) throw new Error('Error fetching cart');
                 const data = await response.json();
-                if (data.success && data.data) {
+                if (data.success) {
                     setCart(data.data);
-                    localStorage.setItem('cart', JSON.stringify(data.data));
                 }
             } catch (error) {
-                console.error('Error loading cart:', error);
-                setError(error instanceof Error ? error.message : 'Error loading cart');
+                setError('Error loading cart');
+                console.error(error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        loadCart();
+        fetchCart();
     }, []);
 
-    // Guardar carrito cuando cambie
-    useEffect(() => {
-        const saveCart = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                // Guardar en localStorage
-                localStorage.setItem('cart', JSON.stringify(cart));
-
-                // Guardar en el backend
-                const response = await fetch('/api/cart', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(cart),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save cart to server');
-                }
-
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.message || 'Error saving cart');
-                }
-            } catch (error) {
-                console.error('Error saving cart:', error);
-                setError(error instanceof Error ? error.message : 'Error saving cart');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        // Solo guardar si hay items en el carrito
-        if (cart.items.length > 0) {
-            saveCart();
+    // Sincronizar cambios con la base de datos
+    const syncCart = async (updatedCart: Cart) => {
+        try {
+            const response = await fetch('/api/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedCart)
+            });
+            if (!response.ok) throw new Error('Error syncing cart');
+        } catch (error) {
+            console.error('Error syncing cart:', error);
         }
-    }, [cart]);
+    };
 
     const calculateTotal = (items: CartItem[]): number => {
         return items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -103,39 +63,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const addToCart = (product: Product) => {
         setCart(currentCart => {
-            const existingItem = currentCart.items.find(
+            const newCart = {
+                ...currentCart,
+                items: [...currentCart.items]
+            };
+            const existingItem = newCart.items.find(
                 item => item.product.id === product.id
             );
             
             if (existingItem) {
-                const updatedItems = currentCart.items.map(item =>
+                const updatedItems = newCart.items.map(item =>
                     item.product.id === product.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
-                return {
-                    items: updatedItems,
-                    total: calculateTotal(updatedItems)
-                };
+                newCart.items = updatedItems;
+                newCart.total = calculateTotal(updatedItems);
+                syncCart(newCart);
+                return newCart;
             }
 
-            const updatedItems = [...currentCart.items, { product, quantity: 1 }];
-            return {
-                items: updatedItems,
-                total: calculateTotal(updatedItems)
-            };
+            const updatedItems = [...newCart.items, { product, quantity: 1 }];
+            newCart.items = updatedItems;
+            newCart.total = calculateTotal(updatedItems);
+            syncCart(newCart);
+            return newCart;
         });
     };
 
     const removeFromCart = (productId: string) => {
         setCart(currentCart => {
-            const updatedItems = currentCart.items.filter(
-                item => item.product.id !== productId
-            );
-            return {
-                items: updatedItems,
-                total: calculateTotal(updatedItems)
+            const newCart = {
+                ...currentCart,
+                items: currentCart.items.filter(
+                    item => item.product.id !== productId
+                )
             };
+            newCart.total = calculateTotal(newCart.items);
+            syncCart(newCart);
+            return newCart;
         });
     };
 
@@ -149,10 +115,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 )
                 .filter(item => item.quantity > 0);
 
-            return {
+            const newCart = {
                 items: updatedItems,
                 total: calculateTotal(updatedItems)
             };
+            syncCart(newCart);
+            return newCart;
         });
     };
 

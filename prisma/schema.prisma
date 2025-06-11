@@ -14,10 +14,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model Product {
-  id       String  @id @default(uuid())
-  title    String
-  price    Float
-  imageUrl String
-  category String
-  onSale   Boolean @default(false)
+  id        String     @id @default(cuid())
+  title     String
+  price     Float
+  imageUrl  String
+  category  String
+  onSale    Boolean   @default(false)
+  cartItems CartItem[] // Agregar esta línea para la relación inversa
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@index([productId])
 }
