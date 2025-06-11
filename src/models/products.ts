@@ -1,3 +1,5 @@
+import { prisma } from '../lib/prisma'
+
 export interface Product {
     id: string;
     title: string;
@@ -65,4 +67,12 @@ export const products: Array<Product> = [
     onSale: true
   },
   
-];
+]
+
+export async function getProducts() {
+  return await prisma.product.findMany()
+}
+
+export async function createProduct(data: Omit<Product, 'id'>) {
+  return await prisma.product.create({ data })
+}
