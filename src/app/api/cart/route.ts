@@ -1,8 +1,6 @@
 // src/app/api/cart/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try {
@@ -54,8 +52,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
     try {
-        // Por ahora usaremos un carrito "default" hasta implementar autenticación
-        let cart = await prisma.cart.findFirst({
+        const cart = await prisma.cart.findFirst({
             include: {
                 items: {
                     include: {
@@ -64,37 +61,8 @@ export async function GET() {
                 }
             }
         });
-
-        if (!cart) {
-            cart = await prisma.cart.create({
-                data: {},
-                include: {
-                    items: {
-                        include: {
-                            product: true
-                        }
-                    }
-                }
-            });
-        }
-
-        const total = cart.items.reduce(
-            (sum, item) => sum + (item.product.price * item.quantity),
-            0
-        );
-
-        return NextResponse.json({ 
-            success: true,
-            data: {
-                id: cart.id,
-                items: cart.items,
-                total
-            }
-        });
+        return NextResponse.json({ success: true, data: cart });
     } catch (error) {
-        console.error('Error retrieving cart:', error);
-        return NextResponse.json({ success: false, error: 'Error retrieving cart' }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
+        return NextResponse.json({ success: false, error: 'Error fetching cart' }, { status: 500 });
     }
 }

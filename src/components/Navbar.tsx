@@ -10,6 +10,7 @@ import {
   NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import AuthButton from "@/components/AuthButton"
 
 export default function Navbar() {
     const { cart } = useCart();
@@ -31,6 +32,7 @@ export default function Navbar() {
                         </NavigationMenuLink>
                     </NavigationMenuItem>
                 </div>
+                <AuthButton />
 
                 {/* Right side items with Cart and Theme Toggle */}
                 <div className="flex items-center gap-4">

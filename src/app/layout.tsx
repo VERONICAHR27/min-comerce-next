@@ -4,6 +4,8 @@ import "./globals.css";
 import { CartProvider } from '../context/CartContext';
 import Navbar from '@/components/Navbar';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from "@/components/providers";
+import { SessionProvider } from "next-auth/react";
 
 
 const geistSans = Geist({
@@ -29,19 +31,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuthProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+          <SessionProvider>
           <CartProvider>
             <Navbar />
             <main>
               {children}
             </main>
           </CartProvider>
+          </SessionProvider>
         </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
