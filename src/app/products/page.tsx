@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from 'next/navigation';
 import ProductCard from "@/components/ProductCard";
 
 interface Product {
@@ -16,12 +17,18 @@ export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('search');
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('/api/products'); // Cambiado a /api/products
+                const url = searchQuery 
+                    ? `/api/products?search=${encodeURIComponent(searchQuery)}`
+                    : '/api/products';
+                    
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -40,7 +47,7 @@ export default function ProductsPage() {
         };
 
         fetchProducts();
-    }, []);
+    }, [searchQuery]);
 
     if (loading) return <div className="container mx-auto px-4 py-8">Loading...</div>;
     if (error) return <div className="container mx-auto px-4 py-8">Error: {error}</div>;

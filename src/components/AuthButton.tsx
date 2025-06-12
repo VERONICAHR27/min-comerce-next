@@ -8,22 +8,11 @@ export default function AuthButton() {
   if (session) {
     return (
       <>
-        <Link href={"/profile"} className="text-xs border-1 rounded-lg px-6 h-8 flex items-center">
-          {session.user?.name}
-        </Link>
-        <button onClick={() => signOut()} className="text-xs">
-          Cerrar sesión
-        </button>
+        <Link href={"/profile"} className="text-xs border-1 rounded-lg px-6 h-8 flex items-center">{session.user?.name}</Link>
+        <button onClick={() => signOut()}>Cerrar sesión</button>
       </>
     )
   }
 
-  return (
-    <button 
-      onClick={() => signIn("google")} 
-      className="text-xs border-1 rounded-lg px-6 h-8 flex items-center"
-    >
-      Iniciar con Google
-    </button>
-  )
+  return <button onClick={() => signIn("github")}>Iniciar con Google</button>
 }

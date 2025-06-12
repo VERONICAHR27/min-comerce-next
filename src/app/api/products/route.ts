@@ -4,10 +4,19 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // GET - Obtener todos los productos
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const products = await prisma.product.findMany();
-    console.log('Products from DB:', products); // Debug log
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+
+    const products = await prisma.product.findMany({
+      where: search ? {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { category: { contains: search, mode: 'insensitive' } },
+        ],
+      } : undefined,
+    });
     
     return NextResponse.json({ 
         success: true,
