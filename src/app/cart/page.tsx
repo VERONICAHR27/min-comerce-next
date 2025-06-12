@@ -3,8 +3,10 @@
 import { useCart } from '@/context/CartContext';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
+    const router = useRouter();
     const { cart, removeFromCart, updateQuantity, isLoading, error } = useCart();
 
     const subtotal = cart?.items?.reduce((sum, item) => 
@@ -111,10 +113,10 @@ export default function CartPage() {
                                         <span>Total</span>
                                         <span>${total.toFixed(2)}</span>
                                     </div>
-                                </div>
-                                <Button 
+                                </div>                                <Button 
                                     className="w-full mt-4"
                                     disabled={cart.items.length === 0}
+                                    onClick={() => router.push('/checkout')}
                                 >
                                     Realizar pedido
                                 </Button>

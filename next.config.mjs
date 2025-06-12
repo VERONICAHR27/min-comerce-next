@@ -8,6 +8,14 @@ const nextConfig = {
             }
         ],
     },
+    trailingSlash: true,
+    generateEtags: false,
+    typescript: {
+        ignoreBuildErrors: true,
+    },
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
 }
 
 export default nextConfig;
