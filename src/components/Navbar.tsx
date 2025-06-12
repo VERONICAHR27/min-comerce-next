@@ -35,11 +35,24 @@ export default function Navbar() {
                         >
                             CATALOGO
                         </Link>
+                        
                         <Link 
                             href="/" 
                             className="text-sm font-medium hover:text-blue-600 transition-colors"
                         >
                             CATEGORIAS
+                        </Link>
+                        <Link 
+                            href="/orders" 
+                            className="text-sm font-medium hover:text-blue-600 transition-colors"
+                        >
+                            MIS PEDIDOS
+                        </Link>
+                        <Link 
+                            href="/checkout" 
+                            className="text-sm font-medium hover:text-blue-600 transition-colors"
+                        >
+                            FORMULARIO
                         </Link>
                     </div>
 
