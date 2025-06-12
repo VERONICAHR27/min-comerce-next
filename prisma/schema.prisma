@@ -49,40 +49,30 @@ model CartItem {
 }
 
 model Order {
-  id              String         @id @default(cuid())
+  id              String      @id @default(cuid())
   customerName    String
   customerEmail   String
-  customerPhone   String
-  shippingAddress String
-  city            String
+  customerAddress String
   subtotal        Float
   shippingCost    Float
   total           Float
-  status          OrderStatus    @default(PENDING)
+  status          String      // PENDING, COMPLETED, CANCELLED
   items           OrderItem[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
   id        String   @id @default(cuid())
   orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
   productId String
+  product   Product  @relation(fields: [productId], references: [id])
   quantity  Int
   price     Float
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([orderId])
   @@index([productId])
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
 }
