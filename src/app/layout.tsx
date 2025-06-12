@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from '../context/CartContext';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from "@/components/providers";
 import { SessionProvider } from "next-auth/react";
@@ -40,10 +41,12 @@ export default function RootLayout({
         >
           <SessionProvider>
           <CartProvider>
-            <Navbar />
-            <main>
-              {children}
-            </main>
+            <Navbar />            <div className="min-h-screen flex flex-col">
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </CartProvider>
           </SessionProvider>
         </ThemeProvider>
