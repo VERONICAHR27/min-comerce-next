@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import ProductCard from "@/components/ProductCard";
 
@@ -13,7 +13,7 @@ interface Product {
   onSale: boolean;
 }
 
-export default function ProductsPage() {
+function ProductList() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,9 +33,6 @@ export default function ProductsPage() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log('API Response:', data); // Debug log
-                
-                // Manejar correctamente la estructura de la respuesta
                 const productsArray = data.products || [];
                 setProducts(productsArray);
             } catch (error) {
@@ -56,7 +53,7 @@ export default function ProductsPage() {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-8">Nuestro Catálogo</h1>
             {products.length === 0 ? (
-                <p>No products found</p>
+                <p>No se encontraron productos</p>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {products.map((product) => (
@@ -65,5 +62,28 @@ export default function ProductsPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+function ProductListFallback() {
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-2xl font-bold mb-8">Nuestro Catálogo</h1>
+            <div className="animate-pulse">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {[...Array(8)].map((_, index) => (
+                        <div key={index} className="bg-gray-200 rounded-lg h-64"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<ProductListFallback />}>
+            <ProductList />
+        </Suspense>
     );
 }
