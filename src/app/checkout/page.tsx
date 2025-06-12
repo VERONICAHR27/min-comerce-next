@@ -3,33 +3,38 @@
 import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-interface CheckoutForm {
-    name: string;
-    email: string;
-    address: string;
-    city: string;
-    phone: string;
-}
+const checkoutSchema = z.object({
+    name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+    email: z.string().email("Correo electrónico inválido"),
+    phone: z.string().min(10, "El teléfono debe tener al menos 10 dígitos"),
+    address: z.string().min(5, "La dirección debe tener al menos 5 caracteres"),
+    city: z.string().min(3, "La ciudad debe tener al menos 3 caracteres"),
+});
+
+type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
     const { cart, clearCart } = useCart();
     const router = useRouter();
     const SHIPPING_COST = 10.00;
-    const [formData, setFormData] = useState<CheckoutForm>({
-        name: "",
-        email: "",
-        address: "",
-        city: "",
-        phone: "",
-    });
     const [loading, setLoading] = useState(false);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<CheckoutForm>({
+        resolver: zodResolver(checkoutSchema),
+    });
 
     const subtotal = cart.items.reduce((sum, item) => sum + item.quantity * item.product.price, 0);
     const total = subtotal + SHIPPING_COST;
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const onSubmit = async (formData: CheckoutForm) => {
         setLoading(true);
 
         try {
@@ -69,13 +74,6 @@ export default function CheckoutPage() {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
     return (
         <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
@@ -84,7 +82,7 @@ export default function CheckoutPage() {
                 {/* Formulario de envío */}
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     <h2 className="text-xl font-semibold mb-6">Información de Envío</h2>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="space-y-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -93,12 +91,12 @@ export default function CheckoutPage() {
                                 <input
                                     type="text"
                                     id="name"
-                                    name="name"
-                                    required
-                                    value={formData.name}
-                                    onChange={handleChange}
+                                    {...register("name")}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {errors.name && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -108,12 +106,12 @@ export default function CheckoutPage() {
                                 <input
                                     type="email"
                                     id="email"
-                                    name="email"
-                                    required
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    {...register("email")}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -123,12 +121,12 @@ export default function CheckoutPage() {
                                 <input
                                     type="tel"
                                     id="phone"
-                                    name="phone"
-                                    required
-                                    value={formData.phone}
-                                    onChange={handleChange}
+                                    {...register("phone")}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {errors.phone && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -138,12 +136,12 @@ export default function CheckoutPage() {
                                 <input
                                     type="text"
                                     id="address"
-                                    name="address"
-                                    required
-                                    value={formData.address}
-                                    onChange={handleChange}
+                                    {...register("address")}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {errors.address && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -153,12 +151,12 @@ export default function CheckoutPage() {
                                 <input
                                     type="text"
                                     id="city"
-                                    name="city"
-                                    required
-                                    value={formData.city}
-                                    onChange={handleChange}
+                                    {...register("city")}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {errors.city && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                                )}
                             </div>
                         </div>
 
