@@ -24,10 +24,9 @@ export default function SignInPage() {
 
         <div className="mt-8">
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn("google", { callbackUrl: "/", prompt: "select_account" })}
             className="w-full flex items-center justify-center gap-3 px-5 py-3 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition-colors"
           >
-            
             Continuar con Google
           </button>
         </div>
