@@ -7,8 +7,8 @@ function hasAccess(route: string, role: string | undefined): boolean {
   if (!role) return false;
   
   // Rutas exclusivas para admin
-  if (route.startsWith("/admin")) {
-    return role === "admin";
+  if (route.startsWith("/admin")) {  // ← Esto incluye /admin/logs
+    return role === "admin";         // ← Solo admin puede acceder
   }
   
   // Rutas accesibles para admin y user
