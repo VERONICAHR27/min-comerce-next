@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Min Commerce Next.js
 
 ## Para empezar
 
@@ -6,43 +6,56 @@ Primero, ejecute el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Abrir [http://localhost:3000](http://localhost:3000)
+Abrir [http://localhost:3000](http://localhost:3000) con su navegador para ver el resultado.
 
-## Sistema de Autenticación y Autorización
+# Sistema de Autenticación y Autorización
 
-### Rutas Protegidas
+## Características Principales
 
-El middleware implementa un sistema de protección condicional basado en roles para las siguientes rutas:
+### **Autenticación**
+- **NextAuth.js** con soporte para Google OAuth
+- **Gestión de sesiones** JWT y base de datos
+- **Middleware de protección** de rutas automático
+- **Páginas personalizadas** de login y error
 
-| Ruta | Roles Permitidos | Descripción |
-|------|------------------|-------------|
-| `/admin/*` | `admin` | Rutas exclusivas para administradores |
-| `/dashboard/*` | `admin`, `user` | Panel accesible para usuarios autenticados |
-| `/profile/*` | `admin`, `user` | Gestión de perfil para usuarios autenticados |
+### **Autorización por Roles**
+- **Roles de usuario**: `admin` y `user`
+- **Protección de rutas** basada en roles
+- **Acceso granular** a funcionalidades
 
-### Comportamiento del Middleware
+### **Tracking de Actividad**
+- **Registro automático** de eventos de login/logout
+- **Dashboard de logs** para administradores
+- **Estadísticas en tiempo real** de actividad de usuarios
 
-#### Sin Sesión
-- **Redirección**: `/denied?type=no_session`
-- **Acción**: Mostrar mensaje para iniciar sesión
+## Middleware de Protección
 
-#### Usuario con rol `user`
-- **Acceso permitido**: `/dashboard/*`, `/profile/*`
-- **Acceso denegado**: `/admin/*` → Redirige a `/dashboard`
+### **Rutas Protegidas**
 
-#### Usuario con rol `admin`
-- **Acceso permitido**: Todas las rutas protegidas
-- **Privilegios completos**: `/admin/*`, `/dashboard/*`, `/profile/*`
+| Ruta | Sin Sesión | Usuario `user` | Usuario `admin` |
+|------|------------|----------------|-----------------|
+| `/admin/*` | ❌ → `/denied` | ❌ → `/denied` | ✅ Acceso permitido |
+| `/profile/*` | ❌ → `/denied` | ✅ Acceso permitido | ✅ Acceso permitido |
+| `/dashboard/*` | ❌ → `/denied` | ✅ Acceso permitido | ✅ Acceso permitido |
 
-#### Usuario sin rol o rol desconocido
-- **Redirección**: `/denied?type=insufficient_permissions`
-- **Acción**: Mostrar mensaje de permisos insuficientes
+## 📊 Dashboard de Logs (Solo Admin)
 
+### **Métricas Disponibles**
+- 🟣 **Usuarios Hoy**: Usuarios únicos que se conectaron hoy
+- 🟢 **Logins Hoy**: Inicios de sesión del día actual
+- 🔵 **Logins Ayer**: Inicios de sesión del día anterior  
+- 🔴 **Logouts Hoy**: Cierres de sesión del día actual
+- ⚫ **Logouts Ayer**: Cierres de sesión del día anterior
+
+## Uso
+
+### **Acceso como Usuario Regular**
+1. Ir a `/login`
+2. Iniciar sesión con Google
+3. Acceso a `/profile` y `/dashboard`
+4. **Restringido**: No puede acceder a `/admin/*`
+
+### **Acceso como Administrador**
+1. Acceso completo a todas las rutas
+2 **Dashboard de logs** disponible en `/admin/logs`
