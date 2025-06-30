@@ -47,4 +47,4 @@ Abrir [http://localhost:3000](http://localhost:3000) con su navegador para ver e
 
 ### **Acceso como Administrador**
 1. Acceso completo a todas las rutas
-2 **Dashboard de logs** disponible en `/admin/logs`
+2. **Dashboard de logs** disponible en `/admin/logs`
