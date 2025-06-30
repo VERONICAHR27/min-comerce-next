@@ -33,7 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.sub = user.id
-        token.role = user.email === "intelservicios@gmail.com" ? "admin" : "user"
+        token.role = user.email === "hilarioreyesveronica6@gmail.com" ? "admin" : "user"
       }
       return token
     },
