@@ -2,17 +2,38 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  
   providers: [
-    Google
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    })
   ],
-  pages: {
-    signIn: "/signIn", // Redirección si no hay sesión
+ 
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 días
+  },
+   pages: {
+    signIn: "/login", // Redirección si no hay sesión
+  },
+
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   callbacks: {
     jwt({ token, user }) {
       if (user) {
         token.sub = user.id
-        token.role = user.email === "hilarioreyesveronica6@gmail.com" ? "admin" : "user"
+        token.role = user.email === "intelservicios@gmail.com" ? "admin" : "user"
       }
       return token
     },

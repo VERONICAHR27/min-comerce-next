@@ -37,20 +37,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Cargar carrito inicial desde la base de datos
+  // Cargar carrito inicial desde la base de datos y localStorage
   useEffect(() => {
     const fetchCart = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/cart');
-        if (!response.ok) throw new Error('Error fetching cart');
+        
+        // Intentar cargar desde la API primero
+        const response = await fetch('/api/cart', {
+          credentials: 'include', // Asegurar que las cookies se envíen
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error fetching cart');
+        }
+        
         const data = await response.json();
-        if (data.success) {
+        if (data.success && data.data) {
           setCart(data.data);
+        } else {
+          // Si no hay datos en la API, intentar cargar desde localStorage
+          const localCart = localStorage.getItem('cart');
+          if (localCart) {
+            const parsedCart = JSON.parse(localCart);
+            setCart(parsedCart);
+          }
         }
       } catch (error) {
-        setError('Error loading cart');
-        console.error(error);
+        console.error('Error loading cart from API:', error);
+        
+        // Fallback a localStorage si la API falla
+        try {
+          const localCart = localStorage.getItem('cart');
+          if (localCart) {
+            const parsedCart = JSON.parse(localCart);
+            setCart(parsedCart);
+          }
+        } catch (localError) {
+          console.error('Error loading cart from localStorage:', localError);
+          setError('Error loading cart');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -63,16 +92,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return items.reduce((sum, item) => 
         sum + (item.product.price * item.quantity), 
     0);
-  };
-
-  // Asegúrate de llamar a calculateTotal cada vez que actualices el carrito
-  const updateCart = (updatedItems: ExtendedCartItem[]) => {
-    const newTotal = calculateTotal(updatedItems);
-    setCart(prev => ({
-        ...prev,
-        items: updatedItems,
-        total: newTotal
-    }));
   };
 
   const addToCart = async (product: Product) => {
@@ -120,15 +139,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const syncCart = async (updatedCart: ExtendedCart) => {
     try {
+      // Guardar en localStorage como respaldo
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      
+      // Intentar sincronizar con la API
       const response = await fetch('/api/cart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify(updatedCart)
       });
-      if (!response.ok) throw new Error('Error syncing cart');
+      
+      if (!response.ok) {
+        console.warn('Error syncing cart with API, but saved locally');
+      }
     } catch (error) {
       console.error('Error syncing cart:', error);
-      setError('Error syncing cart');
+      // Asegurar que al menos se guarde localmente
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
     }
   };
 
@@ -157,6 +187,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .filter(item => item.quantity > 0);
 
       const newCart = {
+        ...currentCart,
         items: updatedItems,
         total: calculateTotal(updatedItems)
       };
@@ -166,7 +197,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = () => {
-    setCart({ items: [], total: 0 });
+    const emptyCart = {
+      ...cart,
+      items: [], 
+      total: 0
+    };
+    setCart(emptyCart);
+    syncCart(emptyCart);
+    localStorage.removeItem('cart');
   };
 
   const isItemInCart = (productId: string): boolean => {

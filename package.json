@@ -6,7 +6,13 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "clean": "rimraf .next && rimraf node_modules/.cache && rimraf .turbo && rimraf out",
+    "clean:hard": "npm run clean && rimraf node_modules && npm install",
+    "dev:clean": "npm run clean && npm run dev",
+    "fix-enoent": "node scripts/fix-enoent.js",
+    "deep-clean": "npm run clean && npx prisma generate && npm run dev",
+    "verify": "node scripts/verify-setup.js"
   },
   "dependencies": {
     "@auth/core": "^0.39.1",
@@ -40,6 +46,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "rimraf": "^5.0.5",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"

@@ -1,34 +1,24 @@
-"use client"
-import { signOut, useSession } from "next-auth/react"
+"use client";
+
+import { signOut, useSession } from "next-auth/react";
+import { Button } from "./ui/button";
+import { Power } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function AuthButton() {
-  const { data: session } = useSession()
-  const router = useRouter();
+	const { data: session } = useSession();
 
-  if (session) {
-    return (
-      <>
-        <Link href={"/profile"} className="text-xs border-1 rounded-lg px-6 h-8 flex items-center">
-          {session.user?.name}
-        </Link>
-        <button 
-          onClick={() => signOut()} 
-          className="text-sm hover:text-blue-600 transition-colors"
-        >
-          Cerrar sesión
-        </button>
-      </>
-    )
-  }
+	if (session) {
+		return (
+			<>
+				<Link href={"/profile"} className="text-xs border-1 rounded-lg px-6 h-8 flex items-center">{session.user?.name}</Link>
+				<Button onClick={() => signOut()} variant={"destructive"} size="sm" className="relative">
+					<Power className="h-4 w-4" />
+					<span className="sr-only">Cerrar Sesión</span>
+				</Button>
+			</>
+		);
+	}
 
-  return (
-    <button 
-      onClick={() => router.push('/signIn')} 
-      className="text-sm hover:text-blue-600 transition-colors"
-    >
-      Iniciar sesión
-    </button>
-  )
+	return <Link href={"/login"} className="text-xs border-1 rounded-lg px-6 h-8 flex items-center">Iniciar Sesión</Link>;
 }
