@@ -2,10 +2,7 @@
 
 ## Para empezar
 
-Primero, ejecute el servidor de desarrollo:
-
-```bash
-npm run dev
+Primero, ejecute el servidor de desarrollo: npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000) con su navegador para ver el resultado.
 
@@ -35,18 +32,10 @@ Abrir [http://localhost:3000](http://localhost:3000) con su navegador para ver e
 
 | Ruta | Sin Sesión | Usuario `user` | Usuario `admin` |
 |------|------------|----------------|-----------------|
-| `/admin/*` | ❌ → `/denied` | ❌ → `/denied` | ✅ Acceso permitido |
-| `/profile/*` | ❌ → `/denied` | ✅ Acceso permitido | ✅ Acceso permitido |
-| `/dashboard/*` | ❌ → `/denied` | ✅ Acceso permitido | ✅ Acceso permitido |
+| `/admin/*` |  `/denied` | `/denied` | Acceso permitido |
+| `/profile/*` | `/denied` | Acceso permitido |  Acceso permitido |
+| `/dashboard/*` | `/denied` | Acceso permitido | Acceso permitido |
 
-## 📊 Dashboard de Logs (Solo Admin)
-
-### **Métricas Disponibles**
-- 🟣 **Usuarios Hoy**: Usuarios únicos que se conectaron hoy
-- 🟢 **Logins Hoy**: Inicios de sesión del día actual
-- 🔵 **Logins Ayer**: Inicios de sesión del día anterior  
-- 🔴 **Logouts Hoy**: Cierres de sesión del día actual
-- ⚫ **Logouts Ayer**: Cierres de sesión del día anterior
 
 ## Uso
 
