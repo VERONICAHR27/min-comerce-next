@@ -1,14 +1,20 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { prisma } from '@/lib/prisma'
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "select_account", // 👈 LÍNEA CLAVE PARA FORZAR SELECCIÓN
+        },
+      },
     })
   ],
   adapter: PrismaAdapter(prisma), //guarda los usuarios en la base de datos

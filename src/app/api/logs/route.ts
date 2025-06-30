@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
         // OBTENER TODOS LOS LOGS (de admin y users)
     const logs = await prisma.sessionLog.findMany({
-      take: 200, // Aumentar el límite para ver más logs
+      take: 200, 
       orderBy: { timestamp: 'desc' },
       include: {
         user: {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
             id: true,
             email: true,
             name: true,
-            role: true // Incluir el rol para mostrar en la tabla
+            role: true 
           }
         }
       }
